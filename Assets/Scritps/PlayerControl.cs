@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class PlayerControl : MonoBehaviour
@@ -15,8 +13,9 @@ public class PlayerControl : MonoBehaviour
     public float jumpForce = 10;
     public float gravityModifier = 4;
     public bool isOnGround = true;
-    public bool gameOver = false; 
+    public bool gameOver = false;
 
+    private int jumpsRemaining = 2; // Maximum jumps allowed, including the initial jump.
 
     // Start is called before the first frame update
     void Start()
@@ -32,14 +31,20 @@ public class PlayerControl : MonoBehaviour
     {
         if (!gameOver) // Check if the game is not over before allowing jumps
         {
-            if (Input.GetKeyUp(KeyCode.Space) && isOnGround && !gameOver)
+            if (Input.GetKeyDown(KeyCode.Space) && (isOnGround || jumpsRemaining > 0))
             {
+                playerRb.velocity = new Vector3(playerRb.velocity.x, 0, playerRb.velocity.z); // Reset vertical velocity
                 playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
                 isOnGround = false;
                 playerAnimation.SetTrigger("Jump_trig");
                 drifParticle.Stop();
-                playerAudio.PlayOneShot(jumpSound,2.0f);
-               
+                playerAudio.PlayOneShot(jumpSound, 2.0f);
+                jumpsRemaining--;
+
+                if (jumpsRemaining < 0)
+                {
+                    jumpsRemaining = 0; // Ensure jumpsRemaining doesn't go negative
+                }
             }
         }
     }
@@ -50,18 +55,17 @@ public class PlayerControl : MonoBehaviour
         {
             isOnGround = true;
             drifParticle.Play();
+            jumpsRemaining = 2; // Reset jumps when landing on the ground
         }
         else if (collision.gameObject.CompareTag("Obstacle"))
         {
             Debug.Log("Game Over");
             gameOver = true;
-            playerAnimation.SetBool("Death_b",true);
+            playerAnimation.SetBool("Death_b", true);
             playerAnimation.SetInteger("DeathType_int", 1);
             explosionParticle.Play();
             playerAudio.PlayOneShot(crashSound, 2.0f);
             drifParticle.Stop();
-            
-
         }
     }
 }

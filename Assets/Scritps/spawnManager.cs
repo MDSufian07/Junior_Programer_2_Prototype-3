@@ -2,12 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random; // Import Unity's Random class
 
 public class spawnManager : MonoBehaviour
 {
-    public GameObject obstaclePrefab;
-    private Vector3 spawnPosition=new Vector3(25,0,0);
-    public float startDelay=2;
+    public GameObject[] ObstaclePrefabs; // Create an array to hold your obstacle prefabs
+    private Vector3 spawnPosition = new Vector3(30, 0, 0);
+    public float startDelay = 2;
     public float repeatRate = 2;
     private PlayerControl playerControlScript;
 
@@ -18,18 +19,24 @@ public class spawnManager : MonoBehaviour
         InvokeRepeating("SpawnObstacle", startDelay, repeatRate);
     }
 
-  
-
     // Update is called once per frame
     void Update()
     {
         
     }
+
     void SpawnObstacle()
     {
-        if(playerControlScript.gameOver==false)
+        if (playerControlScript.gameOver == false)
         {
-            Instantiate(obstaclePrefab, spawnPosition, obstaclePrefab.transform.rotation);
+            // Get a random index within the array bounds
+            int randomIndex = Random.Range(0, ObstaclePrefabs.Length);
+
+            // Instantiate the selected prefab at the spawn position
+            GameObject randomObstacle = Instantiate(ObstaclePrefabs[randomIndex], spawnPosition, ObstaclePrefabs[randomIndex].transform.rotation);
+            
+            // Make sure to set the parent if needed
+            randomObstacle.transform.parent = transform;
         }
     }
 }
